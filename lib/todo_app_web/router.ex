@@ -21,8 +21,9 @@ defmodule TodoAppWeb.Router do
 
     get "/", PageController, :index
     resources "/tasks", TaskController
-    resources "/posts", PostController
-    post "/comment", PostController, :add_comment
+    resources "/posts", PostController do
+      post "/comment", PostController, :add_comment
+    end
   end
 
   # Other scopes may use custom stacks.

@@ -3,6 +3,9 @@ defmodule TodoAppWeb.PostController do
 
   alias TodoApp.Posts
   alias TodoApp.Posts.Post
+  # alias TodoApp.Comments
+  alias TodoApp.Comments.Comment
+  alias TodoApp.Repo
 
   def index(conn, _params) do
     posts = Posts.list_posts()
@@ -27,8 +30,20 @@ defmodule TodoAppWeb.PostController do
   end
 
   def show(conn, %{"id" => id}) do
-    post = Posts.get_post!(id)
-    render(conn, "show.html", post: post)
+    post =
+      id
+      |> Posts.get_post!()
+      |> Repo.preload([:comments])
+
+    changeset = Comment.changeset(%Comment{}, %{})
+    comments = post.comments
+
+    render(conn, "show.html",
+      post: post,
+      changeset: changeset,
+      conn: conn,
+      comments: post.comments
+    )
   end
 
   def edit(conn, %{"id" => id}) do
@@ -58,5 +73,24 @@ defmodule TodoAppWeb.PostController do
     conn
     |> put_flash(:info, "Post deleted successfully.")
     |> redirect(to: Routes.post_path(conn, :index))
+  end
+
+  def add_comment(conn, %{"comment" => comment_params, "post_id" => post_id}) do
+    post =
+      post_id
+      |> Posts.get_post!()
+      |> Repo.preload([:comments])
+
+    case Posts.add_comment(post_id, comment_params) do
+      {:ok, _comment} ->
+        conn
+        |> put_flash(:info, "Comment added :)")
+        |> redirect(to: Routes.post_path(conn, :show, post))
+
+      {:error, _error} ->
+        conn
+        |> put_flash(:error, "Comment not added :(")
+        |> redirect(to: Routes.post_path(conn, :show, post))
+    end
   end
 end

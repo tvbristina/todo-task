@@ -4,8 +4,8 @@ defmodule TodoApp.Comments.Comment do
   alias TodoApp.Posts.Post
 
   schema "comments" do
-    field :content, :string
-    field :name, :string
+    field(:content, :string)
+    field(:name, :string)
     belongs_to(:post, Post)
 
     timestamps()
@@ -14,7 +14,7 @@ defmodule TodoApp.Comments.Comment do
   @doc false
   def changeset(comment, attrs) do
     comment
-    |> cast(attrs, [:name, :content])
-    |> validate_required([:name, :content])
+    |> cast(attrs, [:name, :content, :post_id])
+    |> validate_required([:name, :content, :post_id])
   end
 end
